@@ -1,0 +1,60 @@
+In this lab, you will use socket programming to create a client and server that implements simple RPC like functionality with two functions - GET and PUT.   PUT stores an object in a dictionary, GET retrieves the object.  
+
+You will implement two functions:
+
+    string recv_message(conn) - given an established socket connection (conn), read in the message and return a json string that is the message.  Details on the protocol are below.
+
+    server_program() - Create a socket that listens on port 4444, waits for incoming connections.  For each connection, it will contain a single message - read it, process it, respond to it, then close the connection (but leave the server running to listen for more connections).Be sure to set the socket option to allow the port to be reused (since autograding will need this)
+     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)   
+
+Test program:
+
+The provided python srpc_lab.py includes an ability to run that script directly to execute test cases.  The test cases are defined in test_cases().  The use:
+
+python3 srpc_lab.py <mode>
+
+where mode is one of LOCAL, CLIENT, SERVER, BOTH. 
+
+    LOCAL - does not create sockets, just calls functions locally to see output
+
+    CLIENT - runs the client only.  This is useful for debugging, where in vscode debugger you run the client and in a terminal you run the server.
+
+    SERVER - runs the server only.  This is useful for debugging, where in vscode debugger you run the server and in a terminal you run the client.
+
+    BOTH - uses python Process to fork a process for the server, make client calls all from the same program.  
+
+Protocol encoding:
+
+Note - sample code is provided that describes the protocol.  e.g., for recv_message - look at the send_message for how it is packing the data. For server_program - look at  client_do_single_call  to see how to connect to the server and make a call.  Test cases are provided as well.
+
+Header: [4 bytes - version] [ 4 bytes payload len]
+
+Payload: [len bytes]
+
+The payload for a call will be  a json string.  {"func":<function>, "params":<object>}
+
+For <function> = "PUT", the params will be obj:<string - name>, val:<object>
+
+For <function> = "GET", the params will be obj:<string-name>
+
+example: 
+
+  {"func":"PUT", "params":{"obj":"ABC", "val":{"val1":111, "val2": 222}}}  
+
+  {"func":"GET", "params":{"obj":"ABC"}}  
+
+Responses from the server will be:
+
+{"status": "ERROR"} 
+
+{"status":"OK", "response":retval}   
+
+Note: for retval, this code is contained in the provided code, but as an example:
+
+{'status': 'OK', 'response': {'func': 'PUT', 'response': {'obj': 'ABC', 'response': 'ok'}}}
+
+{'status': 'OK', 'response': {'func': 'GET', 'response': {'obj': 'ABC', 'val': {'val1': 111, 'val2': 222}}}}
+
+Grading:
+
+The test cases provided will be very representative of the test cases used in autograding.  It will include a get call for an object that does not exist, a put, and a get for an object that does exist.  
